@@ -3,10 +3,13 @@ package com.mate.bence.moorhuhn.Prostredie;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.mate.bence.moorhuhn.R;
+
 public class HlavneMenu extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.hlavne_menu);
     }
 }

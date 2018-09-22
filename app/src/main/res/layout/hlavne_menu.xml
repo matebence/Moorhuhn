@@ -1,6 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/prostredie"
+
+    tools:context=".Prostredie.HlavneMenu">
+
+    <ImageView
+        android:layout_width="@dimen/titul_hry_sirka"
+        android:layout_height="@dimen/titul_hry_vyska"
+
+        android:src="@drawable/moorhuhn_titul"
+        android:contentDescription="@string/titul_hry"
+
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/zvuky_hry_moorhuhn"
+        android:layout_width="@dimen/zvuky_hry_moorhuhn_sirka_vyska"
+        android:layout_height="@dimen/zvuky_hry_moorhuhn_sirka_vyska"
+        android:layout_marginBottom="@dimen/zvuky_hry_moorhuhn_margin_bottom"
+        android:layout_marginTop="@dimen/zvuky_hry_moorhuhn_margin_top"
+
+        android:layout_toLeftOf="@+id/hudba_hry_moorhuhn"
+        android:layout_alignParentTop="true"
+
+        android:background="@drawable/ic_zvuky_zapnuta"
+        tools:ignore="RtlHardcoded" />
+
+    <Button
+        android:id="@+id/hudba_hry_moorhuhn"
+        android:layout_width="@dimen/hudba_hry_moorhuhn_sirka_vyska"
+        android:layout_height="@dimen/hudba_hry_moorhuhn_sirka_vyska"
+
+        android:layout_marginBottom="@dimen/hudba_hry_moorhuhn_margin_bottom"
+        android:layout_marginLeft="@dimen/hudba_hry_moorhuhn_margin_left_top"
+        android:layout_marginRight="@dimen/hudba_hry_moorhuhn_margin_right"
+        android:layout_marginTop="@dimen/hudba_hry_moorhuhn_margin_left_top"
+
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+
+        android:background="@drawable/ic_hudba_zapnuta"
+        tools:ignore="RtlHardcoded" />
+
+    <Button
+        android:id="@+id/tlacidlo_spusti_hru"
+        android:layout_width="@dimen/tlacidlo_spusti_hru_sirka"
+        android:layout_height="@dimen/tlacidlo_spusti_hru_vyska"
+        android:layout_marginBottom="@dimen/tlacidlo_spusti_hru_margin"
+
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+
+        android:background="@drawable/spusti_hru" />
+
+    <ImageView
+        android:id="@+id/animacia_moorhuhna"
+        android:layout_width="@dimen/animujuci_moorhuhn_sirka"
+        android:layout_height="@dimen/animujuci_moorhuhn_vyska"
+        android:layout_marginRight="@dimen/animujuci_moorhuhn_margin"
+
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+
+        android:contentDescription="@string/animujuci_moorhuhn"
+        tools:ignore="RtlHardcoded" />
+</RelativeLayout>
