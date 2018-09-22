@@ -4,8 +4,8 @@
     <dimen name="titul_hry_sirka">360dp</dimen>
     <dimen name="titul_hry_vyska">80dp</dimen>
 
-    <dimen name="animujuci_moorhuhn_sirka">150dp</dimen>
-    <dimen name="animujuci_moorhuhn_vyska">150dp</dimen>
+    <dimen name="animujuci_moorhuhn_sirka">180dp</dimen>
+    <dimen name="animujuci_moorhuhn_vyska">180dp</dimen>
     <dimen name="animujuci_moorhuhn_margin">30dp</dimen>
 
     <dimen name="tlacidlo_spusti_hru_sirka">190dp</dimen>
