@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout
+    android:id="@+id/hlavne_menu"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
 
@@ -11,6 +12,7 @@
     tools:context=".Prostredie.HlavneMenu">
 
     <ImageView
+        android:id="@+id/titul_hry_moorhuhn"
         android:layout_width="@dimen/titul_hry_sirka"
         android:layout_height="@dimen/titul_hry_vyska"
 

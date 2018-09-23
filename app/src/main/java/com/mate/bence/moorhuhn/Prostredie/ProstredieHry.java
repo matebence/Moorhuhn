@@ -57,16 +57,16 @@ public class ProstredieHry extends AppCompatActivity implements SensorEventListe
     protected void onResume() {
         super.onResume();
 
-        senzor.registerListener(this, accelorometer, SensorManager.SENSOR_DELAY_FASTEST);
-        senzor.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+        this.senzor.registerListener(this, this.accelorometer, SensorManager.SENSOR_DELAY_FASTEST);
+        this.senzor.registerListener(this, this.magnetometer, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        senzor.unregisterListener(this, accelorometer);
-        senzor.unregisterListener(this, magnetometer);
+        this.senzor.unregisterListener(this, this.accelorometer);
+        this.senzor.unregisterListener(this, this.magnetometer);
     }
 
     @Override
@@ -90,34 +90,34 @@ public class ProstredieHry extends AppCompatActivity implements SensorEventListe
                 float z = event.values[2];
 
                 long cas = System.currentTimeMillis();
-                if ((cas - stavHodnout) > 100) {
+                if ((cas - this.stavHodnout) > 100) {
 
-                    long aktualnaHodnota = (cas - stavHodnout);
-                    stavHodnout = cas;
+                    long aktualnaHodnota = (cas - this.stavHodnout);
+                    this.stavHodnout = cas;
                     float hodnota = Math.abs(x + y + z - this.x - this.y - this.z) / aktualnaHodnota * 10000;
 
-                    if (hodnota > POMER) {
-                        nabyte = true;
+                    if (hodnota > this.POMER) {
+                        this.nabyte = true;
                     }
 
                     this.x = x;
                     this.y = y;
                     this.z = z;
                 }
-                gravitacia = event.values.clone();
+                this.gravitacia = event.values.clone();
                 break;
 
             case Sensor.TYPE_MAGNETIC_FIELD:
-                pozicia = event.values.clone();
+                this.pozicia = event.values.clone();
                 break;
         }
-        if (gravitacia != null && pozicia != null) {
-            if (SensorManager.getRotationMatrix(smerA, smerB, gravitacia, pozicia)) {
-                SensorManager.getOrientation(smerA, orientacia);
+        if (this.gravitacia != null && this.pozicia != null) {
+            if (SensorManager.getRotationMatrix(this.smerA, this.smerB, this.gravitacia, this.pozicia)) {
+                SensorManager.getOrientation(this.smerA, this.orientacia);
 
-                uhol = Math.toDegrees(orientacia[0]);
-                kles = Math.toDegrees(orientacia[1]);
-                stup = Math.toDegrees(orientacia[2]);
+                this.uhol = Math.toDegrees(this.orientacia[0]);
+                this.kles = Math.toDegrees(this.orientacia[1]);
+                this.stup = Math.toDegrees(this.orientacia[2]);
             }
         }
     }
@@ -134,7 +134,7 @@ public class ProstredieHry extends AppCompatActivity implements SensorEventListe
         this.magnetometer = senzor.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
         spustiGenerovanieHry();
-        new Prostredie(prostredieHry).start();
+        new Prostredie(this.prostredieHry).start();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -147,12 +147,14 @@ public class ProstredieHry extends AppCompatActivity implements SensorEventListe
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
 
         getWindow().getDecorView().setSystemUiVisibility(vlastnosti);
-        setContentView(new Hra(this));
+
+        this.hra = new Hra(this);
+        setContentView(this.hra);
     }
 
     @SuppressLint("HandlerLeak")
     private void spustiGenerovanieHry() {
-        prostredieHry = new Handler() {
+        this.prostredieHry = new Handler() {
             public void handleMessage(Message msg) {
                 hra.posuvajProstredieHry(uhol, kles, stup, velkostPosunu);
                 hra.pridavajMoorhunov();

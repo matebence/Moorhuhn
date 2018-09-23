@@ -26,7 +26,7 @@ public class HlavneMenu extends AppCompatActivity implements View.OnClickListene
         spustiNaCelejObrazovke();
         init();
 
-        if (stavHudby) {
+        if (HlavneMenu.stavHudby) {
             PrehravacHudbyZvukov.spusti(HlavneMenu.this, R.raw.hudba);
         }
     }
@@ -34,7 +34,7 @@ public class HlavneMenu extends AppCompatActivity implements View.OnClickListene
     @Override
     protected void onPause() {
         super.onPause();
-        if (stavHudby) {
+        if (HlavneMenu.stavHudby) {
             PrehravacHudbyZvukov.zastav();
         }
     }
@@ -42,7 +42,7 @@ public class HlavneMenu extends AppCompatActivity implements View.OnClickListene
     @Override
     protected void onResume() {
         super.onResume();
-        if (stavHudby) {
+        if (HlavneMenu.stavHudby) {
             PrehravacHudbyZvukov.spusti(HlavneMenu.this, R.raw.hudba);
         }
     }
@@ -51,10 +51,10 @@ public class HlavneMenu extends AppCompatActivity implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.hudba_hry_moorhuhn:
-                spravcaHudbyZvukov(R.id.hudba_hry_moorhuhn, R.drawable.ic_hudba_zapnuta, R.drawable.ic_hudba_vypnuta);
+                spravcaHudbyZvukov(R.id.hudba_hry_moorhuhn, R.drawable.ic_hudba_zapnuta, R.drawable.ic_hudba_vypnuta, R.raw.hudba, HlavneMenu.stavHudby);
                 break;
             case R.id.zvuky_hry_moorhuhn:
-                spravcaHudbyZvukov(R.id.zvuky_hry_moorhuhn, R.drawable.ic_zvuky_zapnuta, R.drawable.ic_zvuky_vypnuta);
+                spravcaHudbyZvukov(R.id.zvuky_hry_moorhuhn, R.drawable.ic_zvuky_zapnuta, R.drawable.ic_zvuky_vypnuta, -1, HlavneMenu.stavZvuku);
                 break;
             case R.id.tlacidlo_spusti_hru:
                 spravcaHry();
@@ -62,22 +62,30 @@ public class HlavneMenu extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-    private void spravcaHudbyZvukov(int tlacidloID, int tlacidloZapnuta, int tlacidloVypnuta){
+    private void spravcaHudbyZvukov(int tlacidloID, int tlacidloZapnuta, int tlacidloVypnuta, int zvukovaStopa, boolean stavTlacidla){
         Button vlastnostiTlacidla = findViewById(tlacidloID);
-        if (stavHudby) {
-            stavHudby = false;
-            PrehravacHudbyZvukov.zastav();
+        if (stavTlacidla) {
+            if(zvukovaStopa != -1) {
+                PrehravacHudbyZvukov.zastav();
+                HlavneMenu.stavHudby = false;
+            }else{
+                HlavneMenu.stavZvuku = false;
+            }
             vlastnostiTlacidla.setBackgroundResource(tlacidloVypnuta);
         } else {
-            stavHudby = true;
-            PrehravacHudbyZvukov.spusti(HlavneMenu.this, R.raw.hudba);
+            if(zvukovaStopa != -1){
+                PrehravacHudbyZvukov.spusti(HlavneMenu.this, zvukovaStopa);
+                HlavneMenu.stavHudby = true;
+            }else{
+                HlavneMenu.stavZvuku = true;
+            }
             vlastnostiTlacidla.setBackgroundResource(tlacidloZapnuta);
         }
     }
 
     private void spravcaHry(){
         PrehravacHudbyZvukov.zastav();
-        if (stavZvuku) {
+        if (HlavneMenu.stavZvuku) {
             final MediaPlayer hra = MediaPlayer.create(HlavneMenu.this, R.raw.spusti);
             hra.start();
         }

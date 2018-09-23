@@ -25,31 +25,31 @@ class Moorhuhn {
     }
 
     float getX() {
-        return x;
+        return this.x;
     }
 
     float getY() {
-        return y;
+        return this.y;
     }
 
     int getVelkost() {
-        return velkost;
+        return this.velkost;
     }
 
     boolean getStart() {
-        return start;
+        return this.start;
     }
 
     boolean getOriginal() {
-        return original;
+        return this.original;
+    }
+
+    boolean getMrtvy() {
+        return this.mrtvy;
     }
 
     void setOriginal(boolean original) {
         this.original = original;
-    }
-
-    boolean getMrtvy() {
-        return mrtvy;
     }
 
     void setMrtvy(boolean mrtvy) {

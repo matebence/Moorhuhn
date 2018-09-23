@@ -10,7 +10,6 @@ public class Prostredie extends Thread {
 
     public Prostredie(Handler prostredie) {
         super();
-
         this.prostredie = prostredie;
     }
 
@@ -22,7 +21,7 @@ public class Prostredie extends Thread {
             } catch (Exception e) {
                 Log.v(TAG, "Pri generovanie prostredie hry doslo chybe");
             }
-            prostredie.sendEmptyMessage(0);
+            this.prostredie.sendEmptyMessage(0);
         }
     }
 }

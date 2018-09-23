@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.mate.bence.moorhuhn.Prostredie.HlavneMenu;
 import com.mate.bence.moorhuhn.Prostredie.ProstredieHry;
 import com.mate.bence.moorhuhn.R;
 
@@ -27,60 +28,65 @@ import java.util.ArrayList;
 public class Hra extends View {
 
     private static final String TAG = ProstredieHry.class.getName();
-
     public static final int DLZKA_HRY = 18000000;
+
     private Context context;
+    private Paint pozadie;
+    private Bitmap prostredie;
 
-    private Paint kresli;
-    private Bitmap pozadie;
+    private int hodnotaSpomalenieHry = nastavHodnoty(20, 40);
+    private boolean spomalenieHry = false;
 
-    private int slowMove = nastavHodnoty(20, 40);
-    private boolean slowMoveStatus = false;
-
-    private ArrayList<Moorhuhn> pocetMoorhunov;
-    private float[] suradniceKoniec = new float[2];
-    private float maxX, maxY;
-    private float pozadieX, pozadieY;
+    private ArrayList<Moorhuhn> moorhuhn;
+    private float[] suradniceHry = new float[2];
+    private float maxSuradnicaX, maxSuradnicaY;
+    private float suradnicaProstrediaX, suradnicProstrediaY;
 
     private int pocetNabojov = 8;
     private int pocetBodov = 0;
-    private int aktualnyStavObrazkov = -1;
-    private int cas = DLZKA_HRY;
 
     private boolean nabijanie = false;
     private boolean koniec = false;
 
-    private int[] moorhuhnDoprava = {
-            R.drawable.moorhuhn_lieta_doprava01, R.drawable.moorhuhn_lieta_doprava02, R.drawable.moorhuhn_lieta_doprava03,
-            R.drawable.moorhuhn_lieta_doprava04, R.drawable.moorhuhn_lieta_doprava04, R.drawable.moorhuhn_lieta_doprava05,
-            R.drawable.moorhuhn_lieta_doprava06, R.drawable.moorhuhn_lieta_doprava07, R.drawable.moorhuhn_lieta_doprava08,
-            R.drawable.moorhuhn_lieta_doprava09, R.drawable.moorhuhn_lieta_doprava10, R.drawable.moorhuhn_lieta_doprava11,
-            R.drawable.moorhuhn_lieta_doprava12, R.drawable.moorhuhn_lieta_doprava13};
-    private int[] naboje = {
-            R.drawable.naboj01, R.drawable.naboj02, R.drawable.naboj03, R.drawable.naboj04, R.drawable.naboj05,
-            R.drawable.naboj06, R.drawable.naboj07, R.drawable.naboj08, R.drawable.naboj09, R.drawable.naboj10,
-            R.drawable.naboj11, R.drawable.naboj12, R.drawable.naboj13, R.drawable.naboj14, R.drawable.naboj15,
-            R.drawable.naboj16, R.drawable.naboj17, R.drawable.naboj18, R.drawable.naboj19, R.drawable.naboj20,
-            R.drawable.naboj21};
+    private int aktualnyObrazok = -1;
+    private int uplinutyCas = DLZKA_HRY;
+
+    private int[] obrazokMoorhuna = {
+            R.drawable.moorhuhn_lieta_01, R.drawable.moorhuhn_lieta_02, R.drawable.moorhuhn_lieta_03,
+            R.drawable.moorhuhn_lieta_04, R.drawable.moorhuhn_lieta_04, R.drawable.moorhuhn_lieta_05,
+            R.drawable.moorhuhn_lieta_06, R.drawable.moorhuhn_lieta_07, R.drawable.moorhuhn_lieta_08,
+            R.drawable.moorhuhn_lieta_09, R.drawable.moorhuhn_lieta_10, R.drawable.moorhuhn_lieta_11,
+            R.drawable.moorhuhn_lieta_12, R.drawable.moorhuhn_lieta_13};
+
+    private int[] obrazokNaboja = {
+            R.drawable.naboj_01, R.drawable.naboj_02, R.drawable.naboj_03, R.drawable.naboj_04, R.drawable.naboj_05,
+            R.drawable.naboj_06, R.drawable.naboj_07, R.drawable.naboj_08, R.drawable.naboj_09, R.drawable.naboj_10,
+            R.drawable.naboj_11, R.drawable.naboj_12, R.drawable.naboj_13, R.drawable.naboj_14, R.drawable.naboj_15,
+            R.drawable.naboj_16, R.drawable.naboj_17, R.drawable.naboj_18, R.drawable.naboj_19, R.drawable.naboj_20,
+            R.drawable.naboj_21};
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public Hra(Context context) {
         super(context);
+
         this.context = context;
-        this.kresli = new Paint();
-        this.pocetMoorhunov = new ArrayList<>();
-        NastavPozadie();
+        this.pozadie = new Paint();
+        this.moorhuhn = new ArrayList<>();
+
+        nastavProstredie();
     }
 
     @SuppressLint("DrawAllocation")
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(pozadie, pozadieX, pozadieY, kresli);
+        canvas.drawBitmap(this.prostredie, this.suradnicaProstrediaX, this.suradnicProstrediaY, this.pozadie);
+
         znazorniPocetBodov(canvas);
-        znazorniNaboje(canvas, nabijanie);
+        znazorniNaboje(canvas, this.nabijanie);
         zostavajuciCas(canvas);
+
         Moorhuhn moorhuhn;
-        for (int i = 0; i < pocetMoorhunov.size(); i++) {
-            moorhuhn = (pocetMoorhunov.get(i));
+        for (int i = 0; i < this.moorhuhn.size(); i++) {
+            moorhuhn = (this.moorhuhn.get(i));
             if (moorhuhn.getMrtvy()) {
                 znazorniMrtvehoMoorhuna(canvas, moorhuhn);
             } else {
@@ -89,29 +95,115 @@ public class Hra extends View {
         }
     }
 
-    public void pridavajMoorhunov() {
+    @SuppressLint("ClickableViewAccessibility")
+    public boolean onTouchEvent(MotionEvent event) {
         Moorhuhn moorhuhn;
-        if (pocetMoorhunov.size() < 10) {
-            if (Math.random() > 0.9) {
-                int rozmedzieY = nastavHodnoty(250, (int) maxY - 250);
-                int rychlost = nastavHodnoty(10, 60);
-                if (nastavHodnoty(0, 6) > 3) {
-                    pocetMoorhunov.add(new Moorhuhn(0, rozmedzieY, nastavHodnoty(130, 250), true, false, false, rychlost));
+        int e = event.getAction();
+
+        if (e == MotionEvent.ACTION_DOWN) {
+            float poziciaTouchX = event.getX();
+            float poziciaTouchY = event.getY();
+
+            if (!this.koniec) {
+                if (this.pocetNabojov > 0) {
+                    this.pocetNabojov--;
+                    prehrajZvuk(new int[]{R.raw.strela});
+
+                    for (int i = this.moorhuhn.size() - 1; i >= 0; i--) {
+                        moorhuhn = (this.moorhuhn.get(i));
+                        if (vykonajAkciu(poziciaTouchX, poziciaTouchY, moorhuhn.getX() + (moorhuhn.getVelkost() / 2), moorhuhn.getY() + (moorhuhn.getVelkost() / 2))) {
+                            bodovySystem(moorhuhn.getVelkost());
+                            moorhuhn.setMrtvy(true);
+                            prehrajZvuk(new int[]{R.raw.trefa});
+                        }
+                    }
                 } else {
-                    pocetMoorhunov.add(new Moorhuhn(maxX, rozmedzieY, nastavHodnoty(130, 250), false, false, false, rychlost));
+                    prehrajZvuk(new int[]{R.raw.prazdne});
+                }
+
+            } else if (vykonajAkciu(poziciaTouchX, poziciaTouchY, this.suradniceHry[0], this.suradniceHry[1])) {
+                this.koniec = false;
+                this.spomalenieHry = false;
+
+                this.uplinutyCas = DLZKA_HRY;
+                this.pocetBodov = 0;
+            }
+            invalidate();
+        }
+        return true;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void nastavProstredie() {
+        Bitmap obrazok = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.prostredie));
+        ziskajSirku();
+
+        this.prostredie = Bitmap.createScaledBitmap(obrazok, (int) (this.maxSuradnicaX + (this.maxSuradnicaX / 2)), (int) (this.maxSuradnicaY + (this.maxSuradnicaY / 2)), false);
+        this.suradnicaProstrediaX = (-1) * (this.maxSuradnicaX / 4);
+        this.suradnicProstrediaY = (-1) * (this.maxSuradnicaY / 4);
+    }
+
+    public void posuvajProstredieHry(double uhol, double kles, double stup, int posun) {
+        if (uhol > 10 && kles > 0 && stup < 0) {
+
+            this.suradnicaProstrediaX += 50;
+            if (this.suradnicaProstrediaX > 0) {
+                this.suradnicaProstrediaX = 0;
+            } else {
+                doPocitajPosun(posun);
+            }
+        } else if (uhol < -10 && kles > 0 && stup < 0) {
+
+            this.suradnicaProstrediaX -= 50;
+            if (this.suradnicaProstrediaX < (-1 * (this.maxSuradnicaX / 2))) {
+                this.suradnicaProstrediaX = (-1 * (this.maxSuradnicaX / 2));
+            } else {
+                doPocitajPosun((-1) * posun);
+            }
+        }
+    }
+
+    private void doPocitajPosun(int hodnota) {
+        Moorhuhn moorhuhn;
+
+        if (this.moorhuhn.size() > 0) {
+            for (int i = this.moorhuhn.size() - 1; i >= 0; i--) {
+                moorhuhn = (this.moorhuhn.get(i));
+                if (moorhuhn.getStart()) {
+                    moorhuhn.spusti(hodnota);
+                } else {
+                    moorhuhn.spusti((-1) * hodnota);
                 }
             }
         }
-        if (pocetMoorhunov.size() > 0) {
-            for (int i = pocetMoorhunov.size() - 1; i >= 0; i--) {
-                moorhuhn = (pocetMoorhunov.get(i));
-                moorhuhn.Pohni(0);
-                if (moorhuhn.getX() > (maxX + (maxX / 2))) {
-                    pocetMoorhunov.remove(i);
+    }
+
+    public void pridavajMoorhunov() {
+        Moorhuhn moorhuhn;
+
+        if (this.moorhuhn.size() < 10) {
+
+            if (Math.random() > 0.9) {
+                int rozmedzieY = nastavHodnoty(250, (int) this.maxSuradnicaY - 250);
+                int rychlost = nastavHodnoty(10, 60);
+                if (nastavHodnoty(0, 6) > 3) {
+                    this.moorhuhn.add(new Moorhuhn(0, rozmedzieY, nastavHodnoty(130, 250), rychlost, true, false, false));
+                } else {
+                    this.moorhuhn.add(new Moorhuhn(this.maxSuradnicaX, rozmedzieY, nastavHodnoty(130, 250), rychlost, false, false, false));
+                }
+            }
+        }
+
+        if (this.moorhuhn.size() > 0) {
+            for (int i = this.moorhuhn.size() - 1; i >= 0; i--) {
+                moorhuhn = (this.moorhuhn.get(i));
+                moorhuhn.spusti(0);
+                if (moorhuhn.getX() > (this.maxSuradnicaX + (this.maxSuradnicaX / 2))) {
+                    this.moorhuhn.remove(i);
                 } else if (moorhuhn.getX() < 0) {
-                    pocetMoorhunov.remove(i);
-                } else if (moorhuhn.getY() > maxY) {
-                    pocetMoorhunov.remove(i);
+                    this.moorhuhn.remove(i);
+                } else if (moorhuhn.getY() > this.maxSuradnicaY) {
+                    this.moorhuhn.remove(i);
                 }
             }
         }
@@ -119,126 +211,33 @@ public class Hra extends View {
 
     private void znazorniMoorhuna(Canvas canvas, Moorhuhn moorhuhn) {
         @SuppressLint("DrawAllocation")
-        Bitmap ziskajZdroj = BitmapFactory.decodeResource(getResources(), vratAktualnyObrazok(moorhuhnDoprava));
+        Bitmap ziskajZdroj = BitmapFactory.decodeResource(getResources(), vratAktualnyObrazok(this.obrazokMoorhuna));
         Bitmap moorhuhnObrazok;
-        if (moorhuhn.getDoprava()) {
+
+        if (moorhuhn.getStart()) {
             moorhuhnObrazok = Bitmap.createScaledBitmap(ziskajZdroj, moorhuhn.getVelkost(), moorhuhn.getVelkost(), false);
-            canvas.drawBitmap(moorhuhnObrazok, moorhuhn.getX(), moorhuhn.getY(), kresli);
+            canvas.drawBitmap(moorhuhnObrazok, moorhuhn.getX(), moorhuhn.getY(), this.pozadie);
         } else {
             Matrix zrkadlo = new Matrix();
             zrkadlo.preScale(-1, 1);
             moorhuhnObrazok = Bitmap.createScaledBitmap(ziskajZdroj, moorhuhn.getVelkost(), moorhuhn.getVelkost(), false);
             Bitmap dst = Bitmap.createBitmap(moorhuhnObrazok, 0, 0, moorhuhnObrazok.getWidth(), moorhuhnObrazok.getHeight(), zrkadlo, false);
-            canvas.drawBitmap(dst, moorhuhn.getX(), moorhuhn.getY(), kresli);
+            canvas.drawBitmap(dst, moorhuhn.getX(), moorhuhn.getY(), pozadie);
         }
     }
 
     private void znazorniMrtvehoMoorhuna(Canvas canvas, Moorhuhn moorhuhn) {
         Bitmap ziskajZdroj = BitmapFactory.decodeResource(getResources(), R.drawable.moorhuhn_mrtvy);
         Bitmap moorhuhnObrazok = Bitmap.createScaledBitmap(ziskajZdroj, moorhuhn.getVelkost(), moorhuhn.getVelkost(), false);
-        canvas.drawBitmap(moorhuhnObrazok, moorhuhn.getX(), moorhuhn.getY(), kresli);
-    }
 
-    private void znazorniNaboje(Canvas canvas, boolean nabijanie) {
-        int velksot = 150;
-        int posun = 0;
-        Bitmap ziskajZdroj;
-        if (nabijanie) {
-            ziskajZdroj = BitmapFactory.decodeResource(getResources(), vratAktualnyObrazok(naboje));
-        } else {
-            ziskajZdroj = BitmapFactory.decodeResource(getResources(), R.drawable.naboj01);
-        }
-        Bitmap naboj = Bitmap.createScaledBitmap(ziskajZdroj, velksot, velksot, false);
-        for (int i = 0; i < pocetNabojov; i++) {
-            canvas.drawBitmap(naboj, posun, maxY - velksot, kresli);
-            posun += 80;
-        }
-    }
-
-    private void znazorniPocetBodov(Canvas canvas) {
-        kresli.setTextSize(100);
-        kresli.setColor(Color.WHITE);
-        canvas.drawText(Integer.toString(pocetBodov), 20, 90, kresli);
-    }
-
-    private void zostavajuciCas(final Canvas canvas) {
-        kresli.setTextSize(100);
-        kresli.setColor(Color.WHITE);
-        int velkost = 250;
-
-        cas -= 10000;
-        int sekundy = (cas / 100000);
-
-        if (sekundy < 1) {
-            kresli.setTextSize(200);
-            canvas.drawText("KONIEC HRY", (maxX / 2) - (int) (velkost * 2.3), maxY / 2, kresli);
-            esteRaz(canvas, velkost);
-
-            if (!koniec) {
-                prehrajZvuk(new int[]{R.raw.koniec});
-            }
-            koniec = true;
-            pocetMoorhunov.clear();
-        } else {
-            canvas.drawText(Integer.toString(sekundy) + "s", maxX - velkost, 90, kresli);
-        }
-    }
-
-    private void esteRaz(Canvas canvas, int velkost) {
-        int velkostPisma = 150;
-        Bitmap ziskajZdroj = BitmapFactory.decodeResource(getResources(), R.drawable.este_raz);
-        Bitmap moorhuhnObrazok = Bitmap.createScaledBitmap(ziskajZdroj, velkost, velkost, false);
-        canvas.drawBitmap(moorhuhnObrazok, (maxX / 2) - (velkost / 2), (maxY / 2) - (velkost / 2) + velkostPisma, kresli);
-        suradniceKoniec[0] = (maxX / 2);
-        suradniceKoniec[1] = (maxY / 2) + (velkost / 2);
-    }
-
-    public void posuvajProstredieHry(double azimuth, double pitch, double roll, int posun) {
-        if (azimuth > 10 && pitch > 0 && roll < 0) {
-            pozadieX += 50;
-            if (pozadieX > 0) {
-                pozadieX = 0;
-            } else {
-                doPocitajPosun(posun);
-            }
-        } else if (azimuth < -10 && pitch > 0 && roll < 0) {
-            pozadieX -= 50;
-            if (pozadieX < (-1 * (maxX / 2))) {
-                pozadieX = (-1 * (maxX / 2));
-            } else {
-                doPocitajPosun((-1) * posun);
-            }
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    private void NastavPozadie() {
-        Bitmap obrazok = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.pozadie));
-        ziskajSirku();
-        this.pozadie = Bitmap.createScaledBitmap(obrazok, (int) (maxX + (maxX / 2)), (int) (maxY + (maxY / 2)), false);
-        pozadieX = (-1) * (maxX / 4);
-        pozadieY = (-1) * (maxY / 4);
-    }
-
-    private void doPocitajPosun(int hodnota) {
-        Moorhuhn moorhuhn;
-        if (pocetMoorhunov.size() > 0) {
-            for (int i = pocetMoorhunov.size() - 1; i >= 0; i--) {
-                moorhuhn = (pocetMoorhunov.get(i));
-                if (moorhuhn.getDoprava()) {
-                    moorhuhn.Pohni(hodnota);
-                } else {
-                    moorhuhn.Pohni((-1) * hodnota);
-                }
-            }
-        }
+        canvas.drawBitmap(moorhuhnObrazok, moorhuhn.getX(), moorhuhn.getY(), pozadie);
     }
 
     public void rychlostMoorhunov(float hodnota) {
-        if (pocetBodov > slowMove) {
-            if (!slowMoveStatus) {
-                Toast.makeText(context, "Slow move bolo aktivovane", Toast.LENGTH_LONG).show();
-                slowMoveStatus = true;
+        if (this.pocetBodov > this.hodnotaSpomalenieHry) {
+            if (!this.spomalenieHry) {
+                Toast.makeText(this.context, "Možnosť spomalenie hry AKTÍVNA", Toast.LENGTH_LONG).show();
+                this.spomalenieHry = true;
             }
             if (hodnota > 5) {
                 zistiSmerZmenRychlost(true, false);
@@ -250,137 +249,171 @@ public class Hra extends View {
         }
     }
 
+    private void zistiSmerZmenRychlost(boolean doprava, boolean dolava) {
+        Moorhuhn moorhuhn;
+
+        if (this.moorhuhn.size() > 0) {
+            for (int i = this.moorhuhn.size() - 1; i >= 0; i--) {
+                moorhuhn = this.moorhuhn.get(i);
+                moorhuhn.setOriginal(true);
+                if (moorhuhn.getStart()) {
+                    if (doprava && !dolava) {
+                        moorhuhn.setRychlost(60);
+                    } else {
+                        moorhuhn.setRychlost(10);
+                    }
+                } else {
+                    if (doprava && !dolava) {
+                        moorhuhn.setRychlost(10);
+                    } else {
+                        moorhuhn.setRychlost(60);
+                    }
+                }
+            }
+        }
+    }
+
     private void nastavSpatRychlost() {
         Moorhuhn moorhuhn;
-        if (pocetMoorhunov.size() > 0) {
-            for (int i = pocetMoorhunov.size() - 1; i >= 0; i--) {
-                moorhuhn = pocetMoorhunov.get(i);
-                if (moorhuhn.getZmenene()) {
+
+        if (this.moorhuhn.size() > 0) {
+            for (int i = this.moorhuhn.size() - 1; i >= 0; i--) {
+                moorhuhn = this.moorhuhn.get(i);
+                if (moorhuhn.getOriginal()) {
                     moorhuhn.setRychlost(nastavHodnoty(10, 60));
                 }
             }
         }
     }
 
-    private void zistiSmerZmenRychlost(boolean doprava, boolean dolava) {
-        Moorhuhn moorhuhn;
-        if (pocetMoorhunov.size() > 0) {
-            for (int i = pocetMoorhunov.size() - 1; i >= 0; i--) {
-                moorhuhn = pocetMoorhunov.get(i);
-                moorhuhn.setZmenene(true);
-                if (moorhuhn.getDoprava()) {
-                    if (doprava && !dolava) {
-                        moorhuhn.setRychlost(60);
-                    } else {
-                        moorhuhn.setRychlost(10);
-                    }
-                } else {
-                    if (doprava && !dolava) {
-                        moorhuhn.setRychlost(10);
-                    } else {
-                        moorhuhn.setRychlost(60);
-                    }
-                }
-            }
-        }
-    }
+    private void znazorniNaboje(Canvas canvas, boolean nabijanie) {
+        int velksot = 150;
+        int posun = 0;
+        Bitmap ziskajZdroj;
 
-    @SuppressLint("ClickableViewAccessibility")
-    public boolean onTouchEvent(MotionEvent event) {
-        Moorhuhn moorhuhn;
-        int e = event.getAction();
-        if (e == MotionEvent.ACTION_DOWN) {
-            float poziciaTouchX = event.getX();
-            float poziciaTouchY = event.getY();
-            if (!koniec) {
-                if (pocetNabojov > 0) {
-                    pocetNabojov--;
-                    prehrajZvuk(new int[]{R.raw.strela});
-                    for (int i = pocetMoorhunov.size() - 1; i >= 0; i--) {
-                        moorhuhn = (pocetMoorhunov.get(i));
-                        if (vykonajAkciu(poziciaTouchX, poziciaTouchY, moorhuhn.getX() + (moorhuhn.getVelkost() / 2), moorhuhn.getY() + (moorhuhn.getVelkost() / 2))) {
-                            bodovySystem(moorhuhn.getVelkost());
-                            moorhuhn.setMrtvy(true);
-                            prehrajZvuk(new int[]{R.raw.trefa});
-                        }
-                    }
-                } else {
-                    prehrajZvuk(new int[]{R.raw.prazdne});
-                }
-
-            } else if (koniec && vykonajAkciu(poziciaTouchX, poziciaTouchY, suradniceKoniec[0], suradniceKoniec[1])) {
-                koniec = false;
-                cas = DLZKA_HRY;
-                pocetBodov = 0;
-                slowMoveStatus = false;
-            }
-            invalidate();
+        if (nabijanie) {
+            ziskajZdroj = BitmapFactory.decodeResource(getResources(), vratAktualnyObrazok(this.obrazokNaboja));
+        } else {
+            ziskajZdroj = BitmapFactory.decodeResource(getResources(), R.drawable.naboj_01);
         }
-        return true;
-    }
 
-    private int vratAktualnyObrazok(int poleObrazkov[]) {
-        aktualnyStavObrazkov++;
-        if (aktualnyStavObrazkov > poleObrazkov.length - 1) {
-            aktualnyStavObrazkov = 0;
-            nabijanie = false;
+        Bitmap naboj = Bitmap.createScaledBitmap(ziskajZdroj, velksot, velksot, false);
+        for (int i = 0; i < this.pocetNabojov; i++) {
+            canvas.drawBitmap(naboj, posun, this.maxSuradnicaY - velksot, this.pozadie);
+            posun += 80;
         }
-        return poleObrazkov[aktualnyStavObrazkov];
     }
 
     public void nabiZbran() {
-        pocetNabojov = 8;
-        nabijanie = true;
+        this.pocetNabojov = 8;
+        this.nabijanie = true;
+
         prehrajZvuk(new int[]{R.raw.nabit});
     }
 
-    private void bodovySystem(int velkost) {
-        if (velkost > 130 && velkost < 150) {
-            pocetBodov += 5;
-        } else if (velkost > 150 && velkost < 170) {
-            pocetBodov += 4;
-        } else if (velkost > 170 && velkost < 190) {
-            pocetBodov += 3;
-        } else if (velkost > 190 && velkost < 220) {
-            pocetBodov += 2;
-        } else if (velkost > 220 && velkost < 250) {
-            pocetBodov++;
+    private void znazorniPocetBodov(Canvas canvas) {
+        this.pozadie.setTextSize(100);
+        this.pozadie.setColor(Color.WHITE);
+
+        canvas.drawText(Integer.toString(this.pocetBodov), 20, 90, pozadie);
+    }
+
+    private void zostavajuciCas(final Canvas canvas) {
+        this.pozadie.setTextSize(100);
+        this.pozadie.setColor(Color.WHITE);
+
+        int velkost = 250;
+
+        this.uplinutyCas -= 10000;
+        int sekundy = (this.uplinutyCas / 100000);
+
+        if (sekundy < 1) {
+            this.pozadie.setTextSize(200);
+
+            canvas.drawText("KONIEC HRY", (this.maxSuradnicaX / 2) - (int) (velkost * 2.3), this.maxSuradnicaY / 2, this.pozadie);
+            dalsiPokus(canvas, velkost);
+
+            if (!this.koniec) {
+                prehrajZvuk(new int[]{R.raw.koniec});
+            }
+
+            this.koniec = true;
+            this.moorhuhn.clear();
+        } else {
+            canvas.drawText(Integer.toString(sekundy) + "s", this.maxSuradnicaX - velkost, 90, this.pozadie);
         }
     }
 
-    private boolean vykonajAkciu(float aX, float aY, float bX, float bY) {
-        return (Math.sqrt((aX - bX) * (aX - bX) + (aY - bY) * (aY - bY))) < 30;
+    private void dalsiPokus(Canvas canvas, int velkost) {
+        int velkostPisma = 150;
+        Bitmap ziskajZdroj = BitmapFactory.decodeResource(getResources(), R.drawable.koniec_dalsi_pokus);
+        Bitmap moorhuhnObrazok = Bitmap.createScaledBitmap(ziskajZdroj, velkost, velkost, false);
+
+        canvas.drawBitmap(moorhuhnObrazok, (this.maxSuradnicaX / 2) - (velkost / 2), (this.maxSuradnicaY / 2) - (velkost / 2) + velkostPisma, this.pozadie);
+
+        this.suradniceHry[0] = (this.maxSuradnicaX / 2);
+        this.suradniceHry[1] = (this.maxSuradnicaY / 2) + (velkost / 2);
+    }
+
+    private void bodovySystem(int moorhuhn) {
+        if (moorhuhn > 130 && moorhuhn < 150) {
+            this.pocetBodov += 5;
+        } else if (moorhuhn > 150 && moorhuhn < 170) {
+            this.pocetBodov += 4;
+        } else if (moorhuhn > 170 && moorhuhn < 190) {
+            this.pocetBodov += 3;
+        } else if (moorhuhn > 190 && moorhuhn < 220) {
+            this.pocetBodov += 2;
+        } else if (moorhuhn > 220 && moorhuhn < 250) {
+            this.pocetBodov++;
+        }
     }
 
     private void prehrajZvuk(int zvuky[]) {
-        if (HlavneMenuActivity.zvuky) {
+        if (HlavneMenu.stavZvuku) {
             for (int zvuk : zvuky) {
-                final MediaPlayer player = MediaPlayer.create(context, zvuk);
-                player.start();
-                player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                final MediaPlayer aktualnyZvuk = MediaPlayer.create(this.context, zvuk);
+                aktualnyZvuk.start();
+                aktualnyZvuk.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        player.release();
+                        aktualnyZvuk.release();
                     }
                 });
             }
         }
     }
 
+    private int vratAktualnyObrazok(int obrazky[]) {
+        this.aktualnyObrazok++;
+        if (this.aktualnyObrazok > obrazky.length - 1) {
+            this.aktualnyObrazok = 0;
+            this.nabijanie = false;
+        }
+
+        return obrazky[this.aktualnyObrazok];
+    }
+
+    private boolean vykonajAkciu(float aX, float aY, float bX, float bY) {
+        return (Math.sqrt((aX - bX) * (aX - bX) + (aY - bY) * (aY - bY))) < 30;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void ziskajSirku() {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        assert windowManager != null;
-        Display display = windowManager.getDefaultDisplay();
+        WindowManager sirka = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        assert sirka != null;
+        Display display = sirka.getDefaultDisplay();
         Point velkost = new Point();
+
         display.getRealSize(velkost);
-        maxX = velkost.x;
+        this.maxSuradnicaX = velkost.x;
         display.getSize(velkost);
-        maxY = velkost.y;
+        this.maxSuradnicaY = velkost.y;
     }
 
     private int nastavHodnoty(int min, int max) {
-        int medzi = (max - min) + 1;
-        return (int) (Math.random() * medzi) + min;
+        int pomer = (max - min) + 1;
+        return (int) (Math.random() * pomer) + min;
     }
 }
