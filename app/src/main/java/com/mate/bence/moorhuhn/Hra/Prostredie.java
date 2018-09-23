@@ -10,6 +10,7 @@ public class Prostredie extends Thread {
 
     public Prostredie(Handler prostredie) {
         super();
+
         this.prostredie = prostredie;
     }
 

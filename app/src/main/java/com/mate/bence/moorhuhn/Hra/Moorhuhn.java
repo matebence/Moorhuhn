@@ -61,17 +61,17 @@ class Moorhuhn {
     }
 
     void spusti(int pozicia) {
-        if (start) {
-            if (!mrtvy) {
-                x = (x + pozicia) + rychlost;
+        if (this.start) {
+            if (!this.mrtvy) {
+                this.x = (this.x + pozicia) + this.rychlost;
             } else {
-                y = y + 25;
+                this.y = this.y + 25;
             }
         } else {
-            if (!mrtvy) {
-                x = (x - pozicia) - rychlost;
+            if (!this.mrtvy) {
+                this.x = (this.x - pozicia) - this.rychlost;
             } else {
-                y = y + 25;
+                this.y = this.y + 25;
             }
         }
     }
