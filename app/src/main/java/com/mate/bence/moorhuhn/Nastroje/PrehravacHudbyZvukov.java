@@ -3,49 +3,49 @@ package com.mate.bence.moorhuhn.Nastroje;
 import android.content.Context;
 import android.media.MediaPlayer;
 
-
 public class PrehravacHudbyZvukov {
 
-    private Context context = null;
-    private int hudba = 0;
+    private Context context;
+    private int hudba;
 
-    private static MediaPlayer mediaPlayer = null;
-    private static MediaPlayer dalsiMediaPlayer = null;
+    private static MediaPlayer prehravacHudby = null;
+    private static MediaPlayer prehravacZvukov = null;
 
-    static public void spusti(Context context, int resId) {
-        new PrehravacHudbyZvukov(context, resId);
+    static public void spusti(Context context, int id) {
+        new PrehravacHudbyZvukov(context, id);
     }
 
     static public void zastav() {
-        mediaPlayer.stop();
-        dalsiMediaPlayer.stop();
+        PrehravacHudbyZvukov.prehravacHudby.stop();
+        PrehravacHudbyZvukov.prehravacZvukov.stop();
     }
 
-    private PrehravacHudbyZvukov(Context context, int resId) {
+    private PrehravacHudbyZvukov(Context context, int id) {
         this.context = context;
-        hudba = resId;
-        mediaPlayer = MediaPlayer.create(this.context, hudba);
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        this.hudba = id;
+
+        PrehravacHudbyZvukov.prehravacHudby = MediaPlayer.create(this.context, this.hudba);
+        PrehravacHudbyZvukov.prehravacHudby.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
-                PrehravacHudbyZvukov.mediaPlayer.start();
+                PrehravacHudbyZvukov.prehravacHudby.start();
             }
         });
         vytvorDalsi();
     }
 
-    private void vytvorDalsi() {
-        dalsiMediaPlayer = MediaPlayer.create(context, hudba);
-        mediaPlayer.setNextMediaPlayer(dalsiMediaPlayer);
-        mediaPlayer.setOnCompletionListener(onCompletionListener);
-    }
-
-    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+    private MediaPlayer.OnCompletionListener koniecZvukovehoSuboru = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             mediaPlayer.release();
-            PrehravacHudbyZvukov.mediaPlayer = dalsiMediaPlayer;
+            PrehravacHudbyZvukov.prehravacHudby = PrehravacHudbyZvukov.prehravacZvukov;
             vytvorDalsi();
         }
     };
+
+    private void vytvorDalsi() {
+        PrehravacHudbyZvukov.prehravacZvukov = MediaPlayer.create(this.context, this.hudba);
+        PrehravacHudbyZvukov.prehravacHudby.setNextMediaPlayer(PrehravacHudbyZvukov.prehravacZvukov);
+        PrehravacHudbyZvukov.prehravacHudby.setOnCompletionListener(this.koniecZvukovehoSuboru);
+    }
 }
