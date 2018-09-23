@@ -5,6 +5,8 @@ import android.media.MediaPlayer;
 
 public class PrehravacHudbyZvukov {
 
+    private static final String TAG = PrehravacHudbyZvukov.class.getName();
+
     private Context context;
     private int hudba;
 

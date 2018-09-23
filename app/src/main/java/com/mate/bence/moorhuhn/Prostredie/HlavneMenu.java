@@ -15,6 +15,8 @@ import com.mate.bence.moorhuhn.R;
 
 public class HlavneMenu extends AppCompatActivity implements View.OnClickListener {
 
+    private static final String TAG = HlavneMenu.class.getName();
+
     public static boolean stavZvuku = true;
     public static boolean stavHudby = true;
 
