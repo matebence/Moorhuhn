@@ -29,5 +29,5 @@ _XML <br />
 
 ## Screenshots
 
-![Screenshoot Moorhuhn 1](https://preview.ibb.co/bE4MdL/Screenshot-2018-11-05-08-44-40-315-com-mate-bence-moorhuhn.png)
-![Screenshoot Moorhuhn 2](https://preview.ibb.co/b4ysk0/Screenshot-2018-11-05-08-45-05-417-com-mate-bence-moorhuhn.png)
+![Screenshoot Moorhuhn 1](https://raw.githubusercontent.com/matebence/Moorhuhn/master/docs/1.png)
+![Screenshoot Moorhuhn 2](https://raw.githubusercontent.com/matebence/Moorhuhn/master/docs/1.png)
